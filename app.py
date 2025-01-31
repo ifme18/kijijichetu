@@ -1,11 +1,15 @@
+import os
 from flask import Flask, request, jsonify
 from models import db, Community, User,Event, Estate,Notification
 from models import db, Community, User, Event, Estate, Notification
 from datetime import datetime
 from flask_migrate import Migrate
-
+from flask_cors import CORS
+from dotenv import load_dotenv
+load_dotenv()
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+CORS(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv["DATABASE_URL"]
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
@@ -35,6 +39,31 @@ def get_community(id):
         'id': community.id,
         'name': community.name,
         'location': community.location
+    })
+@app.route('/communities/<int:id>', methods=['DELETE'])
+def delete_community(id):
+    community = Community.query.get_or_404(id)
+    db.session.delete(community)
+    db.session.commit()
+    return jsonify({'message': 'Community deleted successfully'}), 200
+
+@app.route('/communities/<int:id>', methods=['PUT'])
+def update_community(id):
+    community = Community.query.get_or_404(id)
+    data = request.get_json()
+
+    if 'name' in data:
+        community.name = data['name']
+    if 'location' in data:
+        community.location = data['location']
+
+    db.session.commit()
+
+    return jsonify({
+        'id': community.id,
+        'name': community.name,
+        'location': community.location,
+        'message': 'Community updated successfully'
     })
 
 @app.route('/communities', methods=['POST'])
@@ -74,6 +103,12 @@ def get_users():
         'houseno': u.houseno,
         'community_id': u.community_id
     } for u in users])
+@app.route('/users/<int:id>', methods=['DELETE'])
+def delete_users(id):
+    users = User.query.get_or_404(id)
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({'message': 'user deleted successfully'}), 200
 
 @app.route('/users/<int:id>', methods=['GET'])
 def get_user(id):
