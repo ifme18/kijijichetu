@@ -14,6 +14,7 @@ sqlalchemy = "*"
 flask = "*"
 flask-sqlalchemy = "*"
 flask-migrate = "*"
+gunicorn = "*"
 
 [requires]
 python_full_version = "3.8.13"
